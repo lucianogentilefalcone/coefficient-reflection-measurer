@@ -1,8 +1,29 @@
-import matplotlib.pyplot as plt
 import scipy.fft as fft
-from tkinter import TclError
 import pyaudio
 import numpy as np
+from utils.constants import RATE, K0, S, DIST
+
+
+from enum import Enum
+
+
+class PlotOptions(Enum):
+    REFLECTIONCOEFFICIENT = 0
+    ABSORPTIONCOEFFICIENT = 1
+
+
+def process_raw_data(input_data: list[float]) -> tuple[float, float]:
+    y_fft = fft.fft(input_data[:, 0])
+    y_fft2 = fft.fft(input_data[:, 1])
+
+    y_fft = fft.fftshift(y_fft / RATE)
+    y_fft2 = fft.fftshift(y_fft2 / RATE)
+
+    hi = np.exp(-1j * K0 * S)
+    hr = np.exp(1j * K0 * S)
+    h12 = y_fft / y_fft2
+    reflection_coefficient = ((h12 - hi) / (hr - h12)) * np.exp(2 * 1j * K0 * DIST)
+    return reflection_coefficient, y_fft
 
 
 def get_input_devices():

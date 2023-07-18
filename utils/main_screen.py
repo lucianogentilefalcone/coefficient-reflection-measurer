@@ -1,29 +1,38 @@
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QDialog, QLabel
 from PyQt5.QtGui import QPixmap
-from PyQt5 import Qt
-import traceback
+from PyQt5.QtCore import Qt
 from utils.plot import Plot
+from utils.constants import CHANNELS, RATE, CHUNK
+from utils.helpers import PlotOptions
 
 
 class MainScreen(QDialog):
     def __init__(self):
         super(MainScreen, self).__init__()
-        loadUi("interfaz.ui", self)
+        loadUi("gui.ui", self)
+        self._output_data_index = 0
+        self._started = False
+        self._pixmap = QPixmap('background.jpg')
+        self._label = QLabel(self)
+        self._plot = Plot()
 
-    def load_gui_data(self, devices_list):
+    def load_gui_data(self, devices_list: list = None):
+        """
+        Function that receives input/output devices list and loads GUI data.
+        Devices list is used to populate a combo box/dropdown.
+        :param devices_list: list of devices
+        """
         # adding list of items to combo box
-        self.output_data_index = 0
+        if devices_list is None:
+            devices_list = []
         self.comboBox.addItems(devices_list)
         # setting current item
-        self.started = False
-        self.start_button.clicked.connect(self.start)
-        self.pause_button.clicked.connect(self.pause)
-        self.pixmap = QPixmap('background.jpg')
-        self.label = QLabel(self)
-        self.label.setPixmap(self.pixmap)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label.lower()
+        self.start_button.clicked.connect(self._on_click_start)
+        self.pause_button.clicked.connect(self._on_click_pause)
+        self._label.setPixmap(self._pixmap)
+        self._label.setAlignment(Qt.AlignCenter)
+        self._label.lower()
         self.setWindowTitle('Reflection Measurment')
         self.f_min.setToolTip('Minimun frequency 100Hz')
         self.f_max.setToolTip('Maximum frequency 1000Hz')
@@ -33,29 +42,22 @@ class MainScreen(QDialog):
         self.start_button.setToolTip('Click to start measure')
         self.pause_button.setToolTip('Click to stop measure')
 
-    def start(self):
-        try:
-            index = 0
-            mic = self.comboBox.currentIndex()
-            f_max = int(self.fMax.text())
-            f_min = int(self.fMin.text())
-            if f_min < 100 or f_min >= f_max or f_min > 1000:
-                f_min = 100
-            if f_max > 1000 or f_max <= f_min or f_max < 100:
-                f_max = 1000
-            if self.rBAbsor.isChecked():
-                index = 1
-            if self.rBReflex.isChecked():
-                index = 0
-            # Limites plot
-            if not self.started:
-                self.started = True
-                plot = Plot()
-                plot.plot(f_min, f_max, index, mic, self.output_data_index)
-        except Exception:
-            print(traceback.format_exc())
-            return None
+    def _on_click_start(self):
+        from utils.stream import Stream
+        mic = self.comboBox.currentIndex()
+        # Defining max limits
+        f_max = 1000 if self.f_max.text() not in range(100, 1001) else int(self.f_max.text())
+        f_min = 100 if self.f_min.text() not in range(100, f_max) else int(self.f_min.text())
 
-    def pause(self):
-        if self.started:
-            self.started = 0
+        index = PlotOptions(self.radio_butt_abs.isChecked()).value
+
+        # Plot limits
+        if not self._plot.started:
+            self._plot.started(True)
+
+            stream = Stream(CHANNELS, RATE, CHUNK, mic)
+            self._plot(f_min, f_max).plot(self.output_data_index, index, stream, self.export_cb.isChecked())
+
+    def _on_click_pause(self):
+        if self._plot.started:
+            self._plot.started(False)
