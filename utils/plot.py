@@ -16,6 +16,7 @@ class Plot:
         self.reflection_coefficient = None
         self.y_axis_fft = None
         self.absorption = None
+        self.output_data_index = 0
         pass
 
     def __call__(self, f_min, f_max):
@@ -67,22 +68,23 @@ class Plot:
         file_name = f'{PlotOptions(plot_selection).name.lower().lower()}_{output_data_index}.csv'
         output_data_pd.to_csv(file_name, index=False, sep=";")
 
-    def plot(self, output_data_index, plot_selection, stream, export_data):
+    def plot(self, plot_selection, stream, export_data):
         plt.show(block=False)
         while self._plot_started:
             # Binary data
             data = stream.read(CHUNK)
             decoded_data = decode(data, CHUNK, CHANNELS)
-            output_data_index += 1
+            self.output_data_index += 1
 
             try:
                 self.reflection_coefficient, self.y_axis_fft = process_raw_data(decoded_data)
                 self._show_plot(plot_selection)
                 if export_data:
-                    self._export_data(output_data_index, plot_selection)
+                    self._export_data(self.output_data_index, plot_selection)
 
             except Exception:
                 print(traceback.format_exc())
                 print('Stream stopped')
                 break
         plt.close()
+        stream.close()

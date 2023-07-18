@@ -43,7 +43,7 @@ class MainScreen(QDialog):
         self.pause_button.setToolTip('Click to stop measure')
 
     def _on_click_start(self):
-        from utils.stream import Stream
+        from utils.stream import AudioStream
         mic = self.comboBox.currentIndex()
         # Defining max limits
         f_max = 1000 if self.f_max.text() not in range(100, 1001) else int(self.f_max.text())
@@ -53,11 +53,10 @@ class MainScreen(QDialog):
 
         # Plot limits
         if not self._plot.started:
-            self._plot.started(True)
-
-            stream = Stream(CHANNELS, RATE, CHUNK, mic)
-            self._plot(f_min, f_max).plot(self.output_data_index, index, stream, self.export_cb.isChecked())
+            self._plot.started = True
+            audio_stream = AudioStream(CHANNELS, RATE, CHUNK, mic).stream
+            self._plot(f_min, f_max).plot(index, audio_stream, self.export_cb.isChecked())
 
     def _on_click_pause(self):
         if self._plot.started:
-            self._plot.started(False)
+            self._plot.started = False
