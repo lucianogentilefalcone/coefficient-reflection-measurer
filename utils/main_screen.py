@@ -8,20 +8,21 @@ from utils.helpers import PlotOptions
 
 
 class MainScreen(QDialog):
-    def __init__(self):
+    def __init__(self, plotter: Plot = None):
         super(MainScreen, self).__init__()
         loadUi("gui.ui", self)
         self._output_data_index = 0
         self._started = False
         self._pixmap = QPixmap('background.jpg')
         self._label = QLabel(self)
-        self._plot = Plot()
+        self._plot = plotter or Plot()
 
     def load_gui_data(self, devices_list: list = None):
         """
         Function that receives input/output devices list and loads GUI data.
         Devices list is used to populate a combo box/dropdown.
         :param devices_list: list of devices
+        :param plotter
         """
         # adding list of items to combo box
         if devices_list is None:
@@ -45,9 +46,6 @@ class MainScreen(QDialog):
     def _on_click_start(self):
         from utils.stream import AudioStream
         mic = self.comboBox.currentIndex()
-        # Defining max limits
-        f_max = 1000 if self.f_max.text() not in range(100, 1001) else int(self.f_max.text())
-        f_min = 100 if self.f_min.text() not in range(100, f_max) else int(self.f_min.text())
 
         index = PlotOptions(self.radio_butt_abs.isChecked()).value
 
@@ -55,7 +53,8 @@ class MainScreen(QDialog):
         if not self._plot.started:
             self._plot.started = True
             audio_stream = AudioStream(CHANNELS, RATE, CHUNK, mic).stream
-            self._plot(f_min, f_max).plot(index, audio_stream, self.export_cb.isChecked())
+            self._plot.set_axis_limits(f_min=int(self.f_min.text()), f_max=int(self.f_max.text()))
+            self._plot.plot(index, audio_stream, self.export_cb.isChecked())
 
     def _on_click_pause(self):
         if self._plot.started:

@@ -8,7 +8,7 @@ class InitStreamException(BaseException):
 class AudioStream:
     def __init__(self, channels: int = None, rate: int = None, chunk: int = None, input_device: int = None):
         """
-
+        This function initialize the stream of the audio.
         :param channels: Numbers of channels of the input/output
         :param rate: rate
         :param chunk:

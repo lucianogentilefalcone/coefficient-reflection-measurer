@@ -1,15 +1,13 @@
-import scipy.fft as fft
 import pyaudio
 import numpy as np
+import scipy.fft as fft
 from utils.constants import RATE, K0, S, DIST
-
-
 from enum import Enum
 
 
 class PlotOptions(Enum):
-    REFLECTIONCOEFFICIENT = 0
-    ABSORPTIONCOEFFICIENT = 1
+    REFLECTION_COEFFICIENT = 0
+    ABSORPTION_COEFFICIENT = 1
 
 
 def process_raw_data(input_data: list[float]) -> tuple[float, float]:
@@ -35,7 +33,7 @@ def get_input_devices():
     return device_list
 
 
-def decode(data, CHUNK, channels):
+def decode(data, chunk, channels):
     """
     Convert a byte stream into a 2D numpy array with
     shape (chunk_size, channels)
@@ -47,5 +45,5 @@ def decode(data, CHUNK, channels):
     # TODO: handle data type as parameter, convert between pyaudio/numpy types
     result = np.fromstring(data, dtype=np.float32)
 
-    result = np.reshape(result, (CHUNK, channels))
+    result = np.reshape(result, (chunk, channels))
     return result

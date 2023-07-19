@@ -1,11 +1,8 @@
+import sys
 from utils.helpers import get_input_devices
 from PyQt5.QtWidgets import QApplication, QStackedWidget
 from utils.main_screen import MainScreen
-import sys
-try:
-    from PyQt5 import sip
-except ImportError:
-    import sip
+from utils.constants import WINDOW_WIDTH, WINDOW_HEIGHT
 
 
 if __name__ == '__main__':
@@ -20,8 +17,8 @@ if __name__ == '__main__':
 
     widget = QStackedWidget()
     widget.addWidget(main_screen)
-    widget.setFixedWidth(800)
-    widget.setFixedHeight(500)
+    widget.setFixedWidth(WINDOW_WIDTH)
+    widget.setFixedHeight(WINDOW_HEIGHT)
     widget.show()
     try:
         sys.exit(app.exec())
