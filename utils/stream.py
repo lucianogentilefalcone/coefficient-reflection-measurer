@@ -7,13 +7,6 @@ class InitStreamException(BaseException):
 
 class AudioStream:
     def __init__(self, channels: int = None, rate: int = None, chunk: int = None, input_device: int = None):
-        """
-        This function initialize the stream of the audio.
-        :param channels: Numbers of channels of the input/output
-        :param rate: rate
-        :param chunk:
-        :param input_device:
-        """
         input_args = (channels, rate, chunk, input_device)
         try:
             if not all([True for x in input_args if x is not None]):
@@ -34,21 +27,21 @@ class AudioStream:
             print(e)
 
     @property
-    def channels(self) -> str:
-        return str(self._channels)
+    def channels(self) -> int:
+        return int(self._channels)
 
     @property
-    def rate(self) -> str:
-        return str(self._rate)
+    def rate(self) -> int:
+        return int(self._rate)
 
     @property
-    def chunk(self) -> str:
-        return str(self._chunk)
+    def chunk(self) -> int:
+        return int(self._chunk)
 
     @property
     def input_device(self) -> str:
         return str(self._input_device)
 
     @property
-    def stream(self):
-        return self._stream
+    def input_data(self) -> bytes:
+        return self._stream.read(self._chunk)

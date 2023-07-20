@@ -1,7 +1,7 @@
 import pyaudio
 import numpy as np
 import scipy.fft as fft
-from utils.constants import RATE, K0, S, DIST
+from utils.constants import RATE, S, DIST, PI, C
 from enum import Enum
 
 
@@ -10,21 +10,33 @@ class PlotOptions(Enum):
     ABSORPTION_COEFFICIENT = 1
 
 
-def process_raw_data(input_data: list[float]) -> tuple[float, float]:
+def process_raw_data(f, input_data: type(np.array)) -> tuple[type(np.array), type(np.array)]:
+    """
+    This function process the microphone input signal and calculates the fast fourier
+    transform along with the reflection coefficient for each frequency.
+    :param f:
+    :param input_data:
+    :return: reflection_coefficient, y_fft
+    """
     y_fft = fft.fft(input_data[:, 0])
     y_fft2 = fft.fft(input_data[:, 1])
 
     y_fft = fft.fftshift(y_fft / RATE)
     y_fft2 = fft.fftshift(y_fft2 / RATE)
 
-    hi = np.exp(-1j * K0 * S)
-    hr = np.exp(1j * K0 * S)
+    k0 = 2 * PI * f / C
+
+    hi = np.exp(-1j * k0 * S)
+    hr = np.exp(1j * k0 * S)
     h12 = y_fft / y_fft2
-    reflection_coefficient = ((h12 - hi) / (hr - h12)) * np.exp(2 * 1j * K0 * DIST)
+    reflection_coefficient = ((h12 - hi) / (hr - h12)) * np.exp(2 * 1j * k0 * DIST)
     return reflection_coefficient, y_fft
 
 
-def get_input_devices():
+def get_input_output_devices_names() -> list:
+    """
+    Return audio devices names.
+    """
     device_list = []
     p = pyaudio.PyAudio()
     for i in range(0, 10):
@@ -42,7 +54,6 @@ def decode(data, chunk, channels):
     of [L0, L1, L2, ...] and right channel of [R0, R1, R2, ...], the output
     is ordered as [L0, R0, L1, R1, ...]
     """
-    # TODO: handle data type as parameter, convert between pyaudio/numpy types
     result = np.fromstring(data, dtype=np.float32)
 
     result = np.reshape(result, (chunk, channels))
