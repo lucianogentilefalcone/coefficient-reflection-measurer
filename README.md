@@ -27,7 +27,7 @@ python start.py
 That's it! The application should start and be ready for use.
 
 ## System Requirements
-The application has no special requirements beyond having a computer capable of running it.
+The application has no special requirements beyond having a computer where to run python scripts.
 
 ## Documentation
 The complete project documentation can be found in the PDF file named Proyecto_adapador_de_impedancia.pdf. This documentation provides a detailed explanation of the required hardware, installation instructions, and how to use the application.
