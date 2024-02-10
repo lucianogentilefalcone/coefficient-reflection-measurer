@@ -3,6 +3,7 @@ The coefficient-reflection-measurer application is a final project from the Facu
 
 Screenshot of the application in action
 
+
 ## Installation
 To install and run the application, follow these steps:
 
